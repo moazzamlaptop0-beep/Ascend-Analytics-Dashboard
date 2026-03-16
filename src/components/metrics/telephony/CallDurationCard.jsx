@@ -1,19 +1,16 @@
 import { useCallDuration } from "../../../hooks/useDashboardData";
 import { MetricCard } from "../../ui";
-import { LineChart } from "../../charts";
+import { HorizontalBarChart } from "../../charts";
 import { formatDurationShort } from "../../../utils/formatters";
 
 export default function CallDurationCard() {
   const { data, isLoading, error } = useCallDuration();
 
-  const lineData = data?.trendData
-    ? [
-        {
-          id: "Avg Duration",
-          data: data.trendData.map((d) => ({ x: d.date, y: d.value })),
-        },
-      ]
-    : [];
+  const durationBars = (data?.trendData ?? []).slice(0, 10).map((d) => ({
+    label: d.date.length > 24 ? `${d.date.slice(0, 24)}...` : d.date,
+    fullLabel: d.date,
+    "Avg Duration": d.value,
+  }));
 
   const bp = data?.boxPlot;
 
@@ -29,11 +26,25 @@ export default function CallDurationCard() {
         {bp && (
           <div className="grid grid-cols-5 gap-3 text-center">
             {[
-              { label: "Min", val: bp.min },
-              { label: "P25", val: bp.p25 },
-              { label: "Median", val: bp.median },
-              { label: "P90", val: bp.p90, highlight: true },
-              { label: "P95", val: bp.p95, highlight: true },
+              { label: "Min", val: bp.min, formatted: bp.minFormatted },
+              { label: "P25", val: bp.p25, formatted: bp.p25Formatted },
+              {
+                label: "Median",
+                val: bp.median,
+                formatted: bp.medianFormatted,
+              },
+              {
+                label: "P90",
+                val: bp.p90,
+                formatted: bp.p90Formatted,
+                highlight: true,
+              },
+              {
+                label: "P95",
+                val: bp.p95,
+                formatted: bp.p95Formatted,
+                highlight: true,
+              },
             ].map((s) => (
               <div
                 key={s.label}
@@ -47,22 +58,31 @@ export default function CallDurationCard() {
                 <p
                   className={`text-sm font-bold ${s.highlight ? "text-amber-600" : "text-gray-700"}`}
                 >
-                  {formatDurationShort(s.val)}
+                  {s.formatted || formatDurationShort(s.val)}
                 </p>
               </div>
             ))}
           </div>
         )}
 
-        {/* Trend line */}
-        <div style={{ height: 180 }}>
-          <LineChart
-            data={lineData}
-            yLabel="sec"
+        {/* Avg duration by insurance (top entries for readability) */}
+        <div style={{ height: 210 }}>
+          <HorizontalBarChart
+            data={durationBars}
+            keys={["Avg Duration"]}
+            indexBy="label"
+            xLabel="sec"
+            enableLabel={false}
+            margin={{ top: 10, right: 20, bottom: 36, left: 140 }}
             colors={["#8b5cf6"]}
-            enableArea
-            enablePoints={lineData[0]?.data?.length <= 14}
-            axisBottomTickRotation={-45}
+            tooltip={({ data: d }) => (
+              <div className="bg-white shadow-lg border rounded-lg px-3 py-2 text-xs">
+                <p className="font-semibold text-gray-800">{d.fullLabel}</p>
+                <p className="text-gray-500">
+                  Avg Duration: {d["Avg Duration"]} sec
+                </p>
+              </div>
+            )}
           />
         </div>
       </div>

@@ -26,7 +26,10 @@ export function formatDuration(seconds) {
   if (mins < 60) return `${mins}m ${secs}s`;
   const hrs = Math.floor(mins / 60);
   const remainMins = mins % 60;
-  return `${hrs}h ${remainMins}m`;
+  if (hrs < 24) return `${hrs}h ${remainMins}m`;
+  const days = Math.floor(hrs / 24);
+  const remainHours = hrs % 24;
+  return `${days}d ${remainHours}h`;
 }
 
 // ── Duration formatting (seconds → "4m 24s" style) ──

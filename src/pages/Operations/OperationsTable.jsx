@@ -27,6 +27,14 @@ const STATUS_COLORS = {
   Transferred: "bg-purple-50 text-purple-700",
 };
 
+const STATUS_FILTER_CODES = {
+  Completed: ["S", "C"],
+  Dropped: ["D"],
+  "In Progress": ["I", "Q", "N"],
+  Failed: ["F", "R", "E", "G"],
+  Transferred: ["T"],
+};
+
 // ── Column definitions ──
 const COLUMNS = [
   {
@@ -148,11 +156,14 @@ export default function OperationsTable() {
   // Merge global + local filters
   const mergedFilters = useMemo(
     () => ({
+      dateRange: globalFilters.dateRange,
       insurance: globalFilters.insurance,
       practice: globalFilters.practice,
       dnis: globalFilters.dnis,
       callType: globalFilters.callType,
-      status: statusFilter || undefined,
+      status: statusFilter
+        ? (STATUS_FILTER_CODES[statusFilter] || []).join(",") || undefined
+        : undefined,
     }),
     [globalFilters, statusFilter],
   );

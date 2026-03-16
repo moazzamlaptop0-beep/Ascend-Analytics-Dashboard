@@ -16,6 +16,9 @@ export default function ErrorRateCard() {
         },
       ]
     : [];
+  const trendPoints = lineData[0]?.data ?? [];
+  const hasTrendPoints = trendPoints.length > 0;
+  const hasNonZeroTrend = trendPoints.some((p) => Number(p.y) > 0);
 
   const donutData =
     data?.byCategory?.map((c) => ({
@@ -23,6 +26,8 @@ export default function ErrorRateCard() {
       label: c.category,
       value: c.count,
     })) ?? [];
+  const hasCategoryData = donutData.some((d) => (d.value ?? 0) > 0);
+  const showNoDataSummary = !hasNonZeroTrend && !hasCategoryData;
 
   const alerting = data?.current > THRESHOLDS.ERROR_RATE.warning;
 
@@ -46,31 +51,82 @@ export default function ErrorRateCard() {
         loading={isLoading}
         error={error}
       >
+        {showNoDataSummary && (
+          <div className="mb-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-2">
+            <p className="text-xs font-medium text-gray-700">
+              No error activity for selected range
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Trend and category breakdown are empty or 0%.
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Trend line */}
           <div style={{ height: 200 }}>
-            <LineChart
-              data={lineData}
-              yLabel="%"
-              yFormat={(v) => `${v}%`}
-              colors={[alerting ? COLORS.danger : COLORS.warning]}
-              enableArea
-              enablePoints={lineData[0]?.data?.length <= 14}
-              axisBottomTickRotation={-45}
-            />
+            {hasTrendPoints && hasNonZeroTrend ? (
+              <LineChart
+                data={lineData}
+                yLabel="%"
+                yFormat={(v) => `${v}%`}
+                colors={[alerting ? COLORS.danger : COLORS.warning]}
+                enableArea
+                enablePoints={lineData[0]?.data?.length <= 14}
+                maxXTicks={8}
+                axisBottomTickRotation={-55}
+                margin={{ top: 10, right: 16, bottom: 64, left: 48 }}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50/60">
+                <p className="text-xs text-gray-500">
+                  {hasTrendPoints
+                    ? "Error trend is 0% across selected range"
+                    : "No trend data for selected range"}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Category donut */}
           <div style={{ height: 200 }}>
-            <DonutChart
-              data={donutData}
-              colors={COLORS.chart}
-              innerRadius={0.5}
-              enableArcLinkLabels
-              enableArcLabels={false}
-              margin={{ top: 10, right: 80, bottom: 10, left: 80 }}
-              valueFormat={(v) => formatNumber(v)}
-            />
+            <div className="h-full rounded-lg border border-gray-100 bg-gray-50/30 p-2">
+              <div className="h-32">
+                <DonutChart
+                  data={donutData}
+                  colors={COLORS.chart}
+                  innerRadius={0.5}
+                  enableArcLinkLabels={false}
+                  enableArcLabels={false}
+                  margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
+                  valueFormat={(v) => formatNumber(v)}
+                  emptyText="Fail Empty - No category breakdown available"
+                />
+              </div>
+
+              {hasCategoryData && (
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  {donutData.map((d, i) => (
+                    <div
+                      key={d.id}
+                      className="inline-flex items-center gap-1.5 text-xs text-gray-700"
+                    >
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{
+                          backgroundColor:
+                            COLORS.chart[i % COLORS.chart.length],
+                        }}
+                      />
+                      <span className="font-medium">{d.label}</span>
+                      <span className="text-gray-500">
+                        ({formatNumber(d.value)})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </MetricCard>

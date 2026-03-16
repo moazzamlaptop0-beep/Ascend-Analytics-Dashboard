@@ -22,15 +22,15 @@ export default function ReattemptFunnelCard() {
 
       {/* Drop-off annotations */}
       {data?.stages && (
-        <div className="flex gap-3 mt-2">
+        <div className="flex flex-wrap gap-2 mt-2 max-h-24 overflow-y-auto pr-1">
           {data.stages
-            .filter((s) => s.dropoutPercent != null)
+            .filter((s) => s.dropOffPercent != null)
             .map((s) => (
               <span
                 key={s.label}
                 className="text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded"
               >
-                → {s.label}: {s.dropoutPercent}% drop-off
+                → {s.label}: {s.dropOffPercent}% drop-off
               </span>
             ))}
         </div>

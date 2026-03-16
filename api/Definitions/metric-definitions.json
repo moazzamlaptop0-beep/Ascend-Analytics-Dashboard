@@ -1,0 +1,141 @@
+{
+  "version": "1.0.0",
+  "updatedAtUtc": "2026-03-14T00:00:00Z",
+  "metrics": [
+    {
+      "metric": "M1",
+      "endpoint": "/api/dashboard/total-calls",
+      "definition": "Total outbound call attempts initiated in the selected filter scope.",
+      "formula": "totalCalls = COUNT(outboundmaster_detail.ID)",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M2",
+      "endpoint": "/api/dashboard/connection-rate",
+      "definition": "Percent of call attempts that connected (not in non-connect statuses R, D, Q).",
+      "formula": "connectionRate = connected / total * 100 where connected = SUM(status NOT IN ('R','D','Q'))",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M3",
+      "endpoint": "/api/dashboard/drop-rate",
+      "definition": "Overall and by-insurance drop/fail rate using status F.",
+      "formula": "dropRate = SUM(status = 'F') / COUNT(*) * 100",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M4",
+      "endpoint": "/api/dashboard/peak-hours",
+      "definition": "Hourly and weekday heatmap distribution of call attempts.",
+      "formula": "hourlyCalls = COUNT(outboundmaster_detail.ID) GROUP BY DATEPART(HOUR, CallInTime), DATENAME(WEEKDAY, CallDate)",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M5",
+      "endpoint": "/api/dashboard/active-calls",
+      "definition": "Current queued/active calls snapshot based on pending master status.",
+      "formula": "current = COUNT(*) WHERE RTRIM(outboundmaster.Status) = 'P'",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M6",
+      "endpoint": "/api/dashboard/call-duration",
+      "definition": "Duration distribution percentiles and insurance aggregates from CDR durations.",
+      "formula": "overall = AVG/MIN/MAX/PERCENTILE_CONT(Duration) over filtered cdrmaster rows",
+      "sourceTables": ["cdrmaster", "application"]
+    },
+    {
+      "metric": "M7",
+      "endpoint": "/api/dashboard/top-dropped",
+      "definition": "Top insurances by dropped/failed call volume.",
+      "formula": "dropped = SUM(status = 'F'), dropPct = dropped / COUNT(*) * 100 grouped by insurance",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M8",
+      "endpoint": "/api/dashboard/initiation-source",
+      "definition": "Call status/source breakdown and share percentages.",
+      "formula": "pct = COUNT(statusCode) / SUM(COUNT(*)) * 100",
+      "sourceTables": [
+        "outboundmaster",
+        "outboundmaster_detail",
+        "outboundCallStatus"
+      ]
+    },
+    {
+      "metric": "M9",
+      "endpoint": "/api/dashboard/claim-completion",
+      "definition": "Completion rate based on status C share among all statuses.",
+      "formula": "completionRate = COUNT(status = 'C') / COUNT(*) * 100",
+      "sourceTables": [
+        "outboundmaster",
+        "outboundmaster_detail",
+        "outboundCallStatus"
+      ]
+    },
+    {
+      "metric": "M10",
+      "endpoint": "/api/dashboard/reattempt-funnel",
+      "definition": "Cumulative attempt-stage funnel with drop-off between adjacent stages.",
+      "formula": "stageCount(n+) = calls with attempts >= n; pctOfInitial = stageCount / stageCount(1+) * 100; dropOffPct = (prevStage - stageCount) / prevStage * 100",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M11",
+      "endpoint": "/api/dashboard/first-attempt-rate",
+      "definition": "Percent of calls that succeeded on first outbound detail attempt.",
+      "formula": "rate = SUM(firstDetailStatus IN ('S','C')) / totalCalls * 100",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M12",
+      "endpoint": "/api/dashboard/incomplete-steps",
+      "definition": "Top incomplete/failed steps based on statuses I, F, E, G, R.",
+      "formula": "stepPct = stepCount / SUM(stepCount) * 100 where status IN ('I','F','E','G','R')",
+      "sourceTables": [
+        "outboundmaster",
+        "outboundmaster_detail",
+        "outboundCallStatus"
+      ]
+    },
+    {
+      "metric": "M13",
+      "endpoint": "/api/dashboard/transcription-queue",
+      "definition": "Pending transcription queue depth and wait time within rolling lookback window.",
+      "formula": "current = COUNT(*) WHERE status = 'P' AND CallInTime >= NOW-30d; avgWaitSeconds = AVG(DATEDIFF(second, CallInTime, NOW))",
+      "sourceTables": ["outboundmaster"]
+    },
+    {
+      "metric": "M14",
+      "endpoint": "/api/dashboard/transcription-time",
+      "definition": "Transcription latency distribution using normalized timezone-adjusted minimum latency candidate.",
+      "formula": "latencySec = MIN(valid offset-adjusted DATEDIFF(second, CallEndTime, TranscribeDateTime)); report AVG/P25/P50/P75/P90/P95/MAX",
+      "sourceTables": ["cdrmaster"]
+    },
+    {
+      "metric": "M15",
+      "endpoint": "/api/dashboard/transcription-api-usage",
+      "definition": "Daily transcription throughput and associated detail volume.",
+      "formula": "dailyCalls = COUNT(*) WHERE masterStatus = 'T'; dailyClaims = SUM(detailCount per call)",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M16",
+      "endpoint": "/api/dashboard/concurrent-peaks",
+      "definition": "Peak and hourly concurrent call volume by date-hour buckets.",
+      "formula": "concurrent = COUNT(outboundmaster_detail.ID) GROUP BY CAST(CallDate AS DATE), DATEPART(HOUR, CallInTime)",
+      "sourceTables": ["outboundmaster", "outboundmaster_detail"]
+    },
+    {
+      "metric": "M17",
+      "endpoint": "/api/dashboard/error-rate",
+      "definition": "System error rate using error-like statuses F, G, E, R.",
+      "formula": "errorRate = SUM(status IN ('F','G','E','R')) / COUNT(*) * 100",
+      "sourceTables": [
+        "outboundmaster",
+        "outboundmaster_detail",
+        "outboundCallStatus"
+      ]
+    }
+  ]
+}

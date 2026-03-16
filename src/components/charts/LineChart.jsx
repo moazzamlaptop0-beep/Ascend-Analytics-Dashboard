@@ -10,10 +10,30 @@ export default function LineChart({
   colors,
   enablePoints = true,
   yFormat,
+  xTickValues,
+  maxXTicks = 10,
   axisBottomTickRotation = 0,
   margin = { top: 20, right: 24, bottom: 50, left: 52 },
   ...rest
 }) {
+  const firstSeries = Array.isArray(data?.[0]?.data) ? data[0].data : [];
+  let computedTickValues = xTickValues;
+
+  if (
+    !computedTickValues &&
+    typeof maxXTicks === "number" &&
+    maxXTicks > 0 &&
+    firstSeries.length > maxXTicks
+  ) {
+    const step = Math.ceil(firstSeries.length / maxXTicks);
+    computedTickValues = firstSeries
+      .filter((_, idx) => idx % step === 0 || idx === firstSeries.length - 1)
+      .map((pt) => pt.x);
+
+    // Keep point-scale ticks unique while preserving order.
+    computedTickValues = [...new Set(computedTickValues)];
+  }
+
   return (
     <ResponsiveLine
       data={data}
@@ -26,6 +46,7 @@ export default function LineChart({
         tickSize: 4,
         tickPadding: 8,
         tickRotation: axisBottomTickRotation,
+        tickValues: computedTickValues,
         legend: xLabel,
         legendOffset: 40,
         legendPosition: "middle",

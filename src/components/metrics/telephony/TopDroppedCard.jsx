@@ -31,6 +31,7 @@ export default function TopDroppedCard() {
               : COLORS.warning
           }
           enableLabel
+          labelTextColor="#ffffff"
           margin={{ top: 10, right: 24, bottom: 40, left: 120 }}
           tooltip={({ data: d }) => (
             <div className="bg-white shadow-lg border rounded-lg px-3 py-2 text-xs">

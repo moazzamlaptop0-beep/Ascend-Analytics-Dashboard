@@ -5,16 +5,16 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { subHours, subDays } from "date-fns";
+import { subHours, subDays, subMonths, subYears } from "date-fns";
 
 const FilterContext = createContext(null);
 
 function getDefaultDateRange() {
   const now = new Date();
   return {
-    from: subDays(now, 90),
+    from: subMonths(now, 6),
     to: now,
-    preset: "90d",
+    preset: "6m",
   };
 }
 
@@ -49,8 +49,14 @@ export function FilterProvider({ children }) {
       case "90d":
         from = subDays(now, 90);
         break;
+      case "6m":
+        from = subMonths(now, 6);
+        break;
+      case "1y":
+        from = subYears(now, 1);
+        break;
       default:
-        from = subHours(now, 24);
+        from = subMonths(now, 6);
     }
     setFilters((prev) => ({
       ...prev,

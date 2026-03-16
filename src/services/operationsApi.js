@@ -42,6 +42,33 @@ function formatTimestamp(callDate, callInTime) {
   return "-";
 }
 
+function formatClaimId(claimValue) {
+  if (!claimValue) return null;
+
+  if (typeof claimValue !== "string") {
+    return String(claimValue);
+  }
+
+  const trimmed = claimValue.trim();
+  if (!trimmed.startsWith("[")) {
+    return trimmed;
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (!Array.isArray(parsed)) return trimmed;
+
+    const claimNos = parsed
+      .map((entry) => entry?.ClaimNo)
+      .filter(Boolean)
+      .map((value) => String(value).trim());
+
+    return claimNos.length ? claimNos.join(", ") : trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
 function transformRow(row) {
   return {
     id: `CALL-${String(row.CallID).padStart(7, "0")}`,
@@ -63,7 +90,7 @@ function transformRow(row) {
     attempts: row.NoOfClaims || 1,
     errors:
       row.Status === "F" || row.Status === "E" || row.Status === "G" ? 1 : 0,
-    claimId: row.ClaimNo || null,
+    claimId: formatClaimId(row.ClaimNo),
     uniqueId: row.UniqueId,
     transcriptionPreview: row.TranscriptionPreview,
   };
@@ -100,6 +127,7 @@ export async function fetchOperationsLogs({
   if (sort) params.set("sort", SORT_KEY_MAP[sort] || "CallDate");
   if (dir) params.set("dir", dir);
   if (search) params.set("search", search);
+  if (filters?.status) params.set("status", filters.status);
 
   const filterStr = buildFilterParams(filters);
   const fullParams = filterStr

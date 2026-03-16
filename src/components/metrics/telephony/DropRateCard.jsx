@@ -47,6 +47,7 @@ export default function DropRateCard() {
                 : COLORS.primary
             }
             enableLabel
+            labelTextColor="#ffffff"
             margin={{ top: 10, right: 24, bottom: 40, left: 120 }}
           />
         </div>

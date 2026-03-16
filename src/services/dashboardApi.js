@@ -111,24 +111,30 @@ export async function fetchCallDuration(filters) {
     `/dashboard/call-duration?${buildFilterParams(filters)}`,
   );
   const ins = raw.byInsurance || [];
-  const allMin = ins.length > 0 ? Math.min(...ins.map((r) => r.min)) : 0;
-  const allMax = ins.length > 0 ? Math.max(...ins.map((r) => r.max)) : 0;
-  const avg = raw.overall?.avg || 0;
   return {
     boxPlot: {
-      min: allMin,
-      p25: Math.round(avg * 0.6),
-      median: Math.round(avg * 0.85),
-      p75: Math.round(avg * 1.2),
-      p90: Math.round(avg * 1.5),
-      p95: Math.round(avg * 1.7),
-      max: allMax,
+      min: raw.overall?.min || 0,
+      minFormatted: raw.overall?.minFormatted || null,
+      p25: Math.round(raw.overall?.p25 || 0),
+      p25Formatted: raw.overall?.p25Formatted || null,
+      median: Math.round(raw.overall?.median || 0),
+      medianFormatted: raw.overall?.medianFormatted || null,
+      p75: Math.round(raw.overall?.p75 || 0),
+      p75Formatted: raw.overall?.p75Formatted || null,
+      p90: Math.round(raw.overall?.p90 || 0),
+      p90Formatted: raw.overall?.p90Formatted || null,
+      p95: Math.round(raw.overall?.p95 || 0),
+      p95Formatted: raw.overall?.p95Formatted || null,
+      max: raw.overall?.max || 0,
+      maxFormatted: raw.overall?.maxFormatted || null,
     },
-    meanDuration: Math.round(avg),
-    p99Outlier: allMax,
+    meanDuration: Math.round(raw.overall?.avg || 0),
+    meanDurationFormatted: raw.overall?.avgFormatted || null,
+    p99Outlier: raw.overall?.max || 0,
     trendData: ins.map((r) => ({
       date: r.insurance,
       value: Math.round(r.avg),
+      valueFormatted: r.avgFormatted || null,
     })),
   };
 }
@@ -207,23 +213,7 @@ export async function fetchReattemptFunnel(filters) {
   const raw = await apiFetch(
     `/dashboard/reattempt-funnel?${buildFilterParams(filters)}`,
   );
-  const funnel = raw.funnel || [];
-  const totalInitial = funnel.reduce((s, r) => s + r.total, 0);
-  const stages = funnel.map((r, i) => {
-    const label =
-      r.attempt === 1 ? "Single Attempt" : `${r.attempt} Claims/Batch`;
-    const count = r.total;
-    const percent =
-      totalInitial > 0
-        ? parseFloat(((count / totalInitial) * 100).toFixed(0))
-        : 0;
-    const dropoutPercent =
-      i === 0
-        ? null
-        : parseFloat(((r.failed / (r.total || 1)) * 100).toFixed(0));
-    return { label, count, percent, dropoutPercent };
-  });
-  return { stages };
+  return { stages: raw.stages || [] };
 }
 
 // -- M11: First Attempt Success Rate --
@@ -236,7 +226,7 @@ export async function fetchFirstAttemptRate(filters) {
     `/dashboard/first-attempt-rate?${buildFilterParams(filters)}`,
   );
   const td = raw.trendData || [];
-  const current = td.length > 0 ? td[td.length - 1].value : raw.rate || 0;
+  const current = raw.rate || 0;
   const prev = td.length > 1 ? td[td.length - 2].value : current;
   return {
     current,
@@ -273,9 +263,10 @@ export async function fetchTranscriptionQueue() {
   const history = raw.history || [];
   return {
     current: raw.current || 0,
-    avgWaitTime: raw.avgWaitSeconds
-      ? parseFloat((raw.avgWaitSeconds / 60).toFixed(1))
-      : 0,
+    avgWaitSeconds: raw.avgWaitSeconds || 0,
+    avgWaitFormatted: raw.avgWaitFormatted || null,
+    lookbackDays: raw.lookbackDays || null,
+    historicalPending: raw.historicalPending || 0,
     trend:
       history.length >= 2
         ? history[history.length - 1].value - history[history.length - 2].value
@@ -293,18 +284,29 @@ export async function fetchTranscriptionLatency(filters) {
   const raw = await apiFetch(
     `/dashboard/transcription-time?${buildFilterParams(filters)}`,
   );
-  const avgSec = (raw.overallAvgMs || 0) / 1000;
   return {
     vendors: (raw.byVendor || []).map((v) => ({
       vendor: v.vendor,
-      min: parseFloat((avgSec * 0.2).toFixed(2)),
-      p25: parseFloat((avgSec * 0.5).toFixed(2)),
-      median: parseFloat((avgSec * 0.7).toFixed(2)),
-      p75: parseFloat((avgSec * 0.85).toFixed(2)),
-      p90: parseFloat((avgSec * 0.95).toFixed(2)),
-      max: parseFloat((avgSec * 1.3).toFixed(2)),
+      count: v.count || 0,
+      avg: v.avgSeconds || 0,
+      avgFormatted: v.avgFormatted || null,
+      min: v.min || 0,
+      minFormatted: v.minFormatted || null,
+      p25: v.p25 || 0,
+      p25Formatted: v.p25Formatted || null,
+      median: v.median || 0,
+      medianFormatted: v.medianFormatted || null,
+      p75: v.p75 || 0,
+      p75Formatted: v.p75Formatted || null,
+      p90: v.p90 || 0,
+      p90Formatted: v.p90Formatted || null,
+      p95: v.p95 || 0,
+      p95Formatted: v.p95Formatted || null,
+      max: v.max || 0,
+      maxFormatted: v.maxFormatted || null,
     })),
-    overallP90: parseFloat((avgSec * 0.95).toFixed(2)),
+    overallP90: raw.overallP90Seconds || 0,
+    overallP90Formatted: raw.overallP90Formatted || null,
   };
 }
 

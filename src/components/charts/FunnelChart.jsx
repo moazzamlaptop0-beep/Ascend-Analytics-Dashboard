@@ -14,10 +14,18 @@ export default function FunnelChart({
 
   const maxValue = data[0].value;
   const palette = COLORS.chart;
+  const shouldScroll = data.length > 6;
 
   return (
-    <div className="w-full" style={{ height }}>
-      <div className="flex flex-col gap-2 h-full justify-center">
+    <div
+      className={`w-full ${shouldScroll ? "overflow-y-auto pr-1" : ""}`}
+      style={{ height }}
+    >
+      <div
+        className={`flex flex-col gap-2 ${
+          shouldScroll ? "py-1" : "h-full justify-center"
+        }`}
+      >
         {data.map((step, i) => {
           const pct = maxValue > 0 ? (step.value / maxValue) * 100 : 0;
           const conversionPct =

@@ -48,7 +48,9 @@ export default function FirstAttemptCard() {
             colors={["#6366f1"]}
             enableArea
             enablePoints={lineData[0]?.data?.length <= 14}
-            axisBottomTickRotation={-45}
+            maxXTicks={8}
+            axisBottomTickRotation={-55}
+            margin={{ top: 10, right: 16, bottom: 64, left: 48 }}
           />
         </div>
       </div>

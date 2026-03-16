@@ -11,8 +11,21 @@ export default function DonutChart({
   enableArcLinkLabels = true,
   margin = { top: 20, right: 80, bottom: 20, left: 80 },
   valueFormat,
+  emptyText = "No data available",
   ...rest
 }) {
+  const hasValues = Array.isArray(data)
+    ? data.some((slice) => Number(slice?.value ?? 0) > 0)
+    : false;
+
+  if (!hasValues) {
+    return (
+      <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-gray-200 bg-gray-50/60">
+        <p className="text-xs font-medium text-gray-600">{emptyText}</p>
+      </div>
+    );
+  }
+
   return (
     <ResponsivePie
       data={data}

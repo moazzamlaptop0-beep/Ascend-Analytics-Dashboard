@@ -141,5 +141,7 @@ export const DATE_PRESETS = [
   { label: "Last 7 Days", value: "7d" },
   { label: "Last 30 Days", value: "30d" },
   { label: "Last 90 Days", value: "90d" },
+  { label: "Last 6 Months", value: "6m" },
+  { label: "Last 1 Year", value: "1y" },
   { label: "Custom", value: "custom" },
 ];

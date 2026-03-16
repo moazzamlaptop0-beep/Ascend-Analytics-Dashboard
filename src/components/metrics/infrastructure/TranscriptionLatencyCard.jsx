@@ -8,6 +8,11 @@ export default function TranscriptionLatencyCard() {
   const vendors = data?.vendors ?? [];
   const overallP90 = data?.overallP90;
   const p90Warning = overallP90 > THRESHOLDS.TRANSCRIPTION_P90.warning;
+  const maxScale = Math.max(
+    ...vendors.map((v) => v.max || 0),
+    overallP90 || 0,
+    1,
+  );
 
   return (
     <MetricCard
@@ -22,7 +27,7 @@ export default function TranscriptionLatencyCard() {
           <span
             className={`text-2xl font-bold ${p90Warning ? "text-red-600" : "text-gray-900"}`}
           >
-            {overallP90 ?? "-"}s
+            {data?.overallP90Formatted || `${overallP90 ?? "-"}s`}
           </span>
           <span className="text-xs text-gray-400">overall P90</span>
           {p90Warning && (
@@ -35,7 +40,6 @@ export default function TranscriptionLatencyCard() {
         {/* Vendor breakdown - custom box-plot-like bars */}
         <div className="space-y-3">
           {vendors.map((v) => {
-            const maxScale = 8;
             const toPercent = (val) => Math.min((val / maxScale) * 100, 100);
             const vendorP90Alert = v.p90 > THRESHOLDS.TRANSCRIPTION_P90.warning;
 
@@ -48,7 +52,7 @@ export default function TranscriptionLatencyCard() {
                   <span
                     className={`text-xs font-semibold ${vendorP90Alert ? "text-red-600" : "text-gray-600"}`}
                   >
-                    P90: {v.p90}s
+                    P90: {v.p90Formatted || `${v.p90}s`}
                   </span>
                 </div>
                 <div className="relative w-full h-4 bg-gray-100 rounded-full overflow-hidden">

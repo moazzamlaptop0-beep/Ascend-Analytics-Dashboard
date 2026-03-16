@@ -47,12 +47,14 @@ public static class FilterHelper
         if (f.From.HasValue)
         {
             conditions.Add("om.CallDate >= @dateFrom");
-            dp.Add("dateFrom", f.From.Value, DbType.DateTime);
+            // Normalize to start of day to avoid UTC offset cutting off the boundary day
+            dp.Add("dateFrom", f.From.Value.Date, DbType.DateTime);
         }
         if (f.To.HasValue)
         {
             conditions.Add("om.CallDate <= @dateTo");
-            dp.Add("dateTo", f.To.Value, DbType.DateTime);
+            // Normalize to end of day so the full day is included
+            dp.Add("dateTo", f.To.Value.Date.AddDays(1).AddTicks(-1), DbType.DateTime);
         }
         if (f.Insurance.Length > 0)
         {

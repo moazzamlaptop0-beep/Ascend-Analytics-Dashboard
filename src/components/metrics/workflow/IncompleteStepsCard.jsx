@@ -27,6 +27,7 @@ export default function IncompleteStepsCard() {
           xLabel="Incomplete Count"
           colors={[COLORS.danger]}
           enableLabel
+          labelTextColor="#ffffff"
           margin={{ top: 10, right: 24, bottom: 40, left: 140 }}
           tooltip={({ data: d }) => {
             const src = (data ?? []).find((s) => s.step === d.label);

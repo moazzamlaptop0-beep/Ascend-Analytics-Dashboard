@@ -9,6 +9,17 @@ export default function ApiUsageCard() {
 
   const chartData = data?.data ?? [];
   const vendors = data?.vendors ?? [];
+  const tickStep = Math.max(1, Math.ceil(chartData.length / 8));
+  const tickValues = chartData
+    .filter((_, i) => i % tickStep === 0)
+    .map((d) => d.date);
+
+  if (chartData.length > 0) {
+    const lastDate = chartData[chartData.length - 1].date;
+    if (tickValues[tickValues.length - 1] !== lastDate) {
+      tickValues.push(lastDate);
+    }
+  }
 
   return (
     <MetricCard
@@ -47,8 +58,17 @@ export default function ApiUsageCard() {
             indexBy="date"
             colors={COLORS.chart.slice(0, vendors.length)}
             yLabel="API Calls"
-            axisBottomTickRotation={-45}
-            margin={{ top: 10, right: 130, bottom: 50, left: 52 }}
+            axisBottomTickRotation={-55}
+            margin={{ top: 10, right: 130, bottom: 62, left: 52 }}
+            axisBottom={{
+              tickSize: 4,
+              tickPadding: 8,
+              tickRotation: -55,
+              tickValues,
+              legend: "",
+              legendPosition: "middle",
+              legendOffset: 40,
+            }}
             enableLabel={false}
           />
         </div>

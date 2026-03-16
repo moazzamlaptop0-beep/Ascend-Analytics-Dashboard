@@ -17,6 +17,22 @@ public class OperationsController : ControllerBase
     private readonly DbService _db;
     public OperationsController(DbService db) => _db = db;
 
+    private static string? NormalizeCallIdSearch(string? search)
+    {
+        if (string.IsNullOrWhiteSpace(search)) return null;
+
+        var trimmed = search.Trim();
+        if (trimmed.StartsWith("CALL-", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = trimmed[5..];
+        }
+
+        if (!trimmed.All(char.IsDigit)) return null;
+
+        trimmed = trimmed.TrimStart('0');
+        return string.IsNullOrEmpty(trimmed) ? "0" : trimmed;
+    }
+
     private static readonly Dictionary<string, string> SortMap = new(StringComparer.OrdinalIgnoreCase)
     {
         ["CallDate"] = "om.CallDate",
@@ -115,12 +131,16 @@ public class OperationsController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(search))
         {
+            var trimmedSearch = search.Trim();
+            var normalizedCallIdSearch = NormalizeCallIdSearch(trimmedSearch);
+
             conditions.Add(@"(od.ClaimNo LIKE N'%' + @search + N'%'
                 OR od.UniqueIndetifier LIKE N'%' + @search + N'%'
                 OR RTRIM(od.IVR_Insurance) LIKE N'%' + @search + N'%'
                 OR od.Transcription LIKE N'%' + @search + N'%'
-                OR CAST(od.ID AS VARCHAR) = @search)");
-            dp.Add("search", search, DbType.String);
+                OR (@searchCallId IS NOT NULL AND CAST(od.ID AS VARCHAR) = @searchCallId))");
+            dp.Add("search", trimmedSearch, DbType.String);
+            dp.Add("searchCallId", normalizedCallIdSearch, DbType.String);
         }
 
         string whereSQL = conditions.Count > 0 ? $"WHERE {string.Join(" AND ", conditions)}" : "";

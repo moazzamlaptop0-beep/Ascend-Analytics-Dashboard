@@ -11,6 +11,7 @@ export default function HorizontalBarChart({
   colors,
   xLabel = "",
   enableLabel = true,
+  labelTextColor = { from: "color", modifiers: [["darker", 1.6]] },
   margin = { top: 10, right: 24, bottom: 40, left: 140 },
   ...rest
 }) {
@@ -40,7 +41,7 @@ export default function HorizontalBarChart({
       }}
       enableLabel={enableLabel}
       labelSkipWidth={12}
-      labelTextColor={{ from: "color", modifiers: [["darker", 1.6]] }}
+      labelTextColor={labelTextColor}
       animate
       motionConfig="gentle"
       {...rest}

@@ -1,10 +1,17 @@
 using AscendAPI.Services;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
 // ── Services ──
 builder.Services.AddSingleton<DbService>();
+builder.Services.AddSingleton<MetricDefinitionService>();
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
     {

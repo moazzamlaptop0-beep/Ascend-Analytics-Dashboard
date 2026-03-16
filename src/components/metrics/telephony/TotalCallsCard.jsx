@@ -43,7 +43,9 @@ export default function TotalCallsCard() {
             enableArea
             colors={["#3b82f6"]}
             enablePoints={lineData[0]?.data?.length <= 14}
-            axisBottomTickRotation={-45}
+            maxXTicks={10}
+            axisBottomTickRotation={-30}
+            margin={{ top: 20, right: 24, bottom: 62, left: 52 }}
           />
         </div>
       </MetricCard>

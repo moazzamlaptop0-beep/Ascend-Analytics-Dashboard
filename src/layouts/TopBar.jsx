@@ -79,13 +79,21 @@ export default function TopBar() {
             <button
               key={preset.value}
               onClick={() => updateDateRange(preset.value)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 filters.dateRange.preset === preset.value
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              {preset.label}
+              {/* Short labels for compact display */}
+              {{
+                "24h": "24H",
+                "7d": "7D",
+                "30d": "30D",
+                "90d": "90D",
+                "6m": "6M",
+                "1y": "1Y",
+              }[preset.value] ?? preset.label}
             </button>
           ))}
         </div>

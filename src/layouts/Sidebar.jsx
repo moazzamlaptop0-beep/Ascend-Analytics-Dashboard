@@ -25,9 +25,9 @@ export default function Sidebar({ collapsed, onToggle }) {
     >
       {/* Logo area */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-700/50">
-        <div className="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
+        {/* <div className="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
           <span className="text-white font-bold text-sm">IVR</span>
-        </div>
+        </div> */}
         {!collapsed && (
           <div className="overflow-hidden">
             <h1 className="text-sm font-semibold leading-tight truncate">
